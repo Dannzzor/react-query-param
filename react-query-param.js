@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect, withRouter } from 'react-router-dom';
-import queryString from 'query-string';
 import getDisplayName from 'react-display-name';
+import queryString from './utils/queryParams';
 
 import { isEqual } from 'lodash';
 
@@ -38,11 +38,6 @@ export default function withQueryParams({
     });
   }
 
-  const QUERYPARAMS_OPTIONS = {
-    arrayFormat: 'none', // one of: 'none', 'bracket', 'index',
-    ...queryStringOptions
-  };
-
   return Wrapped => {
     class WithQueryParams extends Component {
       static displayName = `withQueryParams(${getDisplayName(Wrapped)})`;
@@ -63,18 +58,14 @@ export default function withQueryParams({
         const pathname = window.location.pathname;
         const search = window.location.search;
 
-        const parseCurrentQPs = queryString.parse(search, QUERYPARAMS_OPTIONS);
-        const mergeQPs = { ...parseCurrentQPs, ...obj };
+        const parseCurrentQPs = queryString.parse(search);
 
         const to = history.createHref({
           pathname,
-          search: queryString.stringify(
-            {
-              ...parseCurrentQPs,
-              ...obj
-            },
-            QUERYPARAMS_OPTIONS
-          )
+          search: queryString.stringify({
+            ...parseCurrentQPs,
+            ...obj
+          })
         });
 
         history.push(to);
@@ -88,12 +79,8 @@ export default function withQueryParams({
       }
 
       render() {
-        //const { location } = this.props;
         const location = window.location;
-        const queryParams = queryString.parse(
-          location.search,
-          QUERYPARAMS_OPTIONS
-        );
+        const queryParams = queryString.parse(location.search);
 
         const newQueryParams = keys
           ? Object.keys(keys).reduce((acc, paramName) => {
@@ -122,10 +109,7 @@ export default function withQueryParams({
               ...newQueryParams
             };
 
-        const searchString = queryString.stringify(
-          allParams,
-          QUERYPARAMS_OPTIONS
-        );
+        const searchString = queryString.stringify(allParams);
 
         if (location.search.replace('?', '') !== searchString) {
           return (
